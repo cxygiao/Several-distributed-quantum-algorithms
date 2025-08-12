@@ -24,7 +24,7 @@
 ├── Distributed_Simon.py             # 分布式 Simon（并行查询 + 量子排序 + 经典后处理）[PennyLane]
 ├── Distributed_Grover_DOS.py        # 单目标分布式精确 Grover [Qiskit]
 ├── Distributed_Grover_Exp.py        # 分布式 Grover + 计数/幅度估计 [Qiskit]
-└──  compiler.py                      # 划分与传输代价评估（支持 look-ahead / 谱聚类 / 随机与穷举线序）
+└── Compiler.py                      # 划分与传输代价评估（支持 look-ahead / 谱聚类 / 随机与穷举线序）
 ```
 
 ---
@@ -175,7 +175,7 @@ pip install qiskit qiskit-aer matplotlib
 
 ---
 
-### 5) `compiler.py` — 分布式电路**划分/线序**与**传输代价**评估
+### 5) `Compiler.py` — 分布式电路**划分/线序**与**传输代价**评估
 
 **用途**：
 - 从 OpenQASM 电路生成门序列，并在给定**分区数/规模**与**线序（line sequence）**的设定下，计算**传输代价**；
