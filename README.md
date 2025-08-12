@@ -4,7 +4,7 @@
 本仓库包含 5 个用于教学/实验的量子算法/工具脚本：
 
 - **PennyLane**
-  - `Distributed_Shor.py`：整数 \(N=33\) 的**阶发现**（Shor 子程序），含测量分布与连分数后处理。
+  - `Distributed_Shor.py`：整数的**阶发现**（Shor 子程序），含测量分布与连分数后处理。
   - `Distributed_Simon.py`：两节点（\(t=1\)）**分布式 Simon** 原型，含并行 Oracle、量子排序网络 `U_Sort`、模 2 高斯消元与 \(s\) 的重构。
 - **Qiskit**
   - `Distributed_Grover_DOS.py`：**单目标分布式“精确 Grover”**（Exact Grover）原型；通过末轮**相位匹配**（phase-matching）选择精确放大角。
