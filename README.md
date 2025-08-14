@@ -7,7 +7,6 @@
   - `Distributed_Shor.py`：整数的**阶发现**（Shor 子程序），含测量分布与连分数后处理。
   - `Distributed_Simon.py`：两节点（\(t=1\)）**分布式 Simon** 原型，含并行 Oracle、量子排序网络 `U_Sort`、模 2 高斯消元与 \(s\) 的重构。
 - **Qiskit**
-  - `Distributed_Grover_DOS.py`：**单目标分布式“精确 Grover”**（Exact Grover）原型；通过末轮**相位匹配**（phase-matching）选择精确放大角。
   - `Distributed_Grover_Exp.py`：**分布式 Grover + 计数/幅度估计（QAE 思路）**；使用受控 \(G^{2^i}\) 估计解数的粗略区间，再自适应选择迭代轮次并统计结果。
 - **编译/评估工具**
   - `compiler.py`：基于电路划分与线序生成的**传输代价评估**脚本，支持谱聚类划分、穷举/随机线序与**前瞻（look-ahead）**传输代价。
@@ -22,7 +21,6 @@
 .
 ├── Distributed_Shor.py              # Shor 阶发现（相位估计 + 连分数）[PennyLane]
 ├── Distributed_Simon.py             # 分布式 Simon（并行查询 + 量子排序 + 经典后处理）[PennyLane]
-├── Distributed_Grover_DOS.py        # 单目标分布式精确 Grover [Qiskit]
 ├── Distributed_Grover_Exp.py        # 分布式 Grover + 计数/幅度估计 [Qiskit]
 └── Compiler.py                      # 划分与传输代价评估（支持 look-ahead / 谱聚类 / 随机与穷举线序）
 ```
@@ -73,10 +71,6 @@ pip install qiskit qiskit-aer matplotlib
 
 **Qiskit：**
 
-- 精确 Grover（单目标）：
-  ```bash
-  python Distributed_Grover_DOS.py
-  ```
 - 分布式 Grover + 计数/幅度估计：
   ```bash
   python Distributed_Grover_Exp.py
@@ -130,29 +124,7 @@ pip install qiskit qiskit-aer matplotlib
 
 ---
 
-### 3) `Distributed_Grover_DOS.py`（Qiskit）— 单目标分布式**精确 Grover**
-
-**目的**：对**单一目标态**执行 Grover 搜索，并通过**末轮相位匹配**计算精确放大角，实现一次命中（Exact Grover 思路）。
-
-**实现要点（与源码对应）**：
-- `amplitude_oracle(marked_states, varphi)`：对目标态施加 `PhaseGate(varphi)` 的多控相位翻转（`MCMTGate` 组合）；
-- `diffusion_oracle(qc, marked_states, phi)`：在 \(H\) 与 \(X\) 包裹下施加 `PhaseGate(phi)` 的多控相位，完成关于 \(|+\rangle^{\otimes n}\) 的反射；
-- 若干轮标准放大后，计算精确角 `acc_phi/acc_psi` 进行末轮放大；
-- 使用 `Aer.get_backend('qasm_simulator')` 运行，`plot_histogram` 绘制直方图。
-
-**关键参数**：
-- `marked_states`：目标态列表（如 `["011111"]`），字符串长度即 `num_qubits`；
-- `num_iterations`：放大轮次（若脚本内设置为默认值，可按 \(\left\lfloor \frac{\pi}{4}\sqrt{2^n} \right\rfloor\) 调整）。
-
-**输出**：
-- 在 `qasm_simulator` 上测量得到的概率分布及其直方图。
-
-**提示**：
-- 该“精确 Grover”一次命中的严格保证仅适用于单目标态场景；对多目标态为相位放大但不保证一次命中。
-
----
-
-### 4) `Distributed_Grover_Exp.py`（Qiskit）— **分布式 Grover + 计数/幅度估计**
+### 3) `Distributed_Grover_Exp.py`（Qiskit）— **分布式 Grover + 计数/幅度估计**
 
 **目的**：先对解数进行粗略估计（利用受控 \(G^{2^i}\) 的幅度估计思路），再据此自适应选择 Grover 迭代轮次；脚本循环多次统计直方图，展示搜索效果。
 
@@ -175,7 +147,7 @@ pip install qiskit qiskit-aer matplotlib
 
 ---
 
-### 5) `Compiler.py` — 分布式电路**划分/线序**与**传输代价**评估
+### 4) `Compiler.py` — 分布式电路**划分/线序**与**传输代价**评估
 
 **用途**：
 - 从 OpenQASM 电路生成门序列，并在给定**分区数/规模**与**线序（line sequence）**的设定下，计算**传输代价**；
