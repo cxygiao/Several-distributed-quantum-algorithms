@@ -142,9 +142,6 @@ pip install qiskit qiskit-aer matplotlib
 **输出**：
 - 控制寄存器估计结果与聚合计数直方图。
 
-**提示**：
-- 建议在具体应用中校准 `con_qubits` 与候选迭代轮次，或替换为标准 QAE/Iterative QAE 以提升估计稳定性。
-
 ---
 
 ### 4) `Compiler.py` — 分布式电路**划分/线序**与**传输代价**评估
