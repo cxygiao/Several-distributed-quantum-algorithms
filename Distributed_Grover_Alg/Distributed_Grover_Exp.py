@@ -1,27 +1,30 @@
+#本程序实现了分布式Grover算法
+
+#主程序（在代码中标注为#Main）
+实现了针对给定目标应用分布式Grover算法在无序数据库中进行搜索，测量输出目标串的目的
+包含参数设置（目标态# Set target_states、y_i长度# The length of y_i、算法循环次数# Setting of shots）、结果以字典形式输出、结果图像输出（图像输出分为包含所有量子态的输出及仅含有有响应状态的输出）
+
+#算子定义（在代码中标注# Definition of operators）
+主要是对算法中所使用到的黑盒Oracle进行定义
+
+#算法整体定义（在代码中标注 # Definition of Algorithm）
+是对算法的整体封装，包含了算子的调用，两个量子过程中间确定迭代范围的经典过程的编写，以及小规模Grover算法的迭代过程
+
+#二进制转换定义（在代码中标注#Definition of converting to the fixed length binary string）
+为了让输出的图像显示二进制串，以及中间过程中的二进制读取转化为十进制等功能特别定义了一个转换二进制固定位数的函数
+
+#随机输出定义（在代码中标注#Definition of random output）
+为了满足程序中随机输出固定位数比特串
+
 import math
 import matplotlib.pyplot as plt
 import random
 
-
+from numpy.matlib import empty
 from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister,transpile
 from qiskit_aer import *
 from qiskit.circuit.library import GroverOperator, MCMTGate, ZGate, RZGate, XGate, UGate
 from qiskit.visualization import plot_histogram
-
-# #本程序实现了分布式Grover算法
-#
-# #主程序（在代码中标注为#Main）
-# 实现了针对给定目标应用分布式Grover算法在无序数据库中进行搜索，测量输出目标串的目的
-# 包含参数设置（节点对应目标态、算法循环次数）、图像输出（图像输出分为包含所有量子态的输出及仅含有有响应状态的输出）
-#
-# #算子定义（在代码中标注# Definition of operators）
-# 主要是对算法中所使用到的黑盒Oracle进行定义
-#
-# #算法整体定义（在代码中标注 # Definition of Algorithm）
-# 是对算法的整体封装，包含了算子的调用，两个量子过程中间确定迭代范围的经典过程的编写，以及小规模Grover算法的迭代过程
-#
-# #二进制转换（在代码中标注#Definition of converting to the fixed length binary string）
-# 为了让输出的图像显示二进制串，以及中间过程中的二进制读取转化为十进制等功能特别定义了一个转换二进制固定位数的函数
 
 # Definition of operators
 def grover_oracle(marked_states):
@@ -81,7 +84,6 @@ def DQAA_QAE():
     for i in range(con_qubits):
         qc.measure(i,con_qubits-1-i)
 
-    # Ideal
     backend = Aer.get_backend('qasm_simulator')
     transpile_qc=transpile(qc,backend=backend)
 
@@ -139,32 +141,49 @@ def DQAA_QAE():
 
     return ideal_counts
 
+#Definition of converting to the fixed length binary string
 def convert_to_fixed_length_binary(num, length):
     binary = bin(num)[2:]
     return binary.zfill(length)
 
+#Definition of random output
+def sample_nbit_counts(n, shots) :
+    fmt = f"0{n}b"
+    counts: dict[str, int] = {}
+    for _ in range(shots):
+        s = format(random.getrandbits(n), fmt)
+        counts[s] = counts.get(s, 0) + 1
+    return counts
 
 # Main
-# Set marked_states
-marked_states = ['1001，0010']
+# Set target_states
+target_states=['101000','100111','001011']
+# The length of y_i
+y_i_len=2
+# Setting of shots
+shots=500
 
-num_qubits = len(marked_states[0])
-count=0
-count_sum={}
-for i in range(2**len(marked_states[0])):
-    x = convert_to_fixed_length_binary(i,len(marked_states[0]))
-    count_sum[x] = 0
+for node in range(0,2**y_i_len):
+    tail = format(node, f"0{y_i_len}b")
+    marked_states = [s[:-y_i_len] for s in target_states if len(s) >= y_i_len and s[-y_i_len:] == tail]
+    if len(marked_states)==0:
+        count_sum = sample_nbit_counts(len(target_states[0])-y_i_len, shots)
+    else:
+        num_qubits = len(marked_states[0])
+        count=0
+        count_sum={}
+        for i in range(2**len(marked_states[0])):
+            x = convert_to_fixed_length_binary(i,len(marked_states[0]))
+            count_sum[x] = 0
+        while count< shots:
+            ideal_counts_result = DQAA_QAE()
+            for result_count, frequent in ideal_counts_result.items():
+                count_sum[result_count] += 1
+            count += 1
 
-# Set simulate time
-while count< 500:
-    ideal_counts_result = DQAA_QAE()
-    for result_count, frequent in ideal_counts_result.items():
-        count_sum[result_count] += 1
-    count += 1
-
-print(count_sum)
-plot_histogram(count_sum)
-filtered_data={k: v for k, v in count_sum.items() if v!=0}
-plot_histogram(filtered_data)
+    print("node",node,"=",count_sum)
+    plot_histogram(count_sum)
+    filtered_data={k: v for k, v in count_sum.items() if v!=0}
+    plot_histogram(filtered_data)
 
 plt.show()
